@@ -14,7 +14,7 @@ const STATUS_MAP: Record<string, StatusItem> = {
   safe: { label: "안전", color: "green", icon: GreenIcon },
   caution: { label: "주의", color: "yellow", icon: YellowIcon },
   danger: { label: "위험", color: "red", icon: RedIcon },
-  unknown: { label: "오류", color: "grey", icon: GreyIcon },
+  unknown: { label: "오류", color: "grey", icon: RedIcon },
   loading: { label: "검사", color: "grey", icon: GreyIcon },
 };
 
