@@ -8,6 +8,19 @@
   src: url("../../fonts/PretendardVariable.woff2") format("woff2-variations");
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
 .mainBadge {
   display: inline-flex;
   align-items: center;

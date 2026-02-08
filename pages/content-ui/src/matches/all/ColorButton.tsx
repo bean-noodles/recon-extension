@@ -59,6 +59,7 @@ export default function ColorButton({
     >
       <img
         src={selected.icon}
+        className={status === "loading" ? "animate-spin" : ""}
         style={{ width: "16px", height: "16px", display: "block" }}
         alt={selected.label}
       />
