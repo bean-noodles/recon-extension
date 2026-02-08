@@ -12,6 +12,8 @@ interface Result {
     title: string;
     link: string;
   };
+  status?: "safe" | "caution" | "danger" | "unknown" | "loading";
+  reason?: string;
   expanded: boolean;
 }
 
@@ -27,23 +29,42 @@ export default function MainPage() {
   };
 
   useEffect(() => {
-    const fetchResults = async () => {
-      if (!window.chrome || !chrome.storage) return;
-
+    const loadData = () => {
       chrome.storage.local.get("searchResults", (data) => {
         if (data.searchResults) {
-          const withExpanded = data.searchResults.map(
-            (r: Omit<Result, "expanded">) => ({
-              ...r,
-              expanded: false,
-            }),
-          );
-          setResults(withExpanded);
+          setResults((prev) => {
+            // Merge with existing expanded state
+            const newValue = data.searchResults.map((r: Result) => {
+              const existing = prev.find((p) => p.link === r.link);
+              return {
+                ...r,
+                expanded: existing ? existing.expanded : false,
+              };
+            });
+            return newValue;
+          });
         }
       });
     };
-    fetchResults();
 
+    loadData();
+
+    const handleStorageChange = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName === "local" && changes.searchResults) {
+        loadData();
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => {
+      chrome.storage.onChanged.removeListener(handleStorageChange);
+    };
+  }, []);
+
+  useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0] && tabs[0].url) {
         const url = new URL(tabs[0].url);
@@ -100,6 +121,7 @@ export default function MainPage() {
                 <ColorButton
                   title={r.badgeInfo.title}
                   link={r.badgeInfo.link}
+                  status={r.status}
                 />
                 <img
                   src={r.expanded ? Arrowdown : Arrowup}
@@ -112,7 +134,17 @@ export default function MainPage() {
             <div
               className={`expand-area ${r.expanded ? "expanded" : "collapsed"}`}
             >
-              {r.expanded && <p className="expand-content">여기에 추가 공간</p>}
+              {r.expanded && (
+                <div className="expand-content">
+                  <p>
+                    <strong>상태:</strong>{" "}
+                    {r.status?.toUpperCase() || "UNKNOWN"}
+                  </p>
+                  <p>
+                    <strong>이유:</strong> {r.reason || "정보 없음"}
+                  </p>
+                </div>
+              )}
             </div>
           </li>
         ))

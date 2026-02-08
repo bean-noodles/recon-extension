@@ -1,5 +1,4 @@
 import "@src/components/ColorButton/ColorButton.css";
-import { useState } from "react";
 import RedIcon from "@src/../public/icons/red.svg";
 import YellowIcon from "@src/../public/icons/yellow.svg";
 import GreenIcon from "@src/../public/icons/green.svg";
@@ -11,43 +10,39 @@ interface StatusItem {
   icon: string;
 }
 
-const STATUS: StatusItem[] = [
-  { label: "안전", color: "green", icon: GreenIcon },
-  { label: "주의", color: "yellow", icon: YellowIcon },
-  { label: "위험", color: "red", icon: RedIcon },
-  { label: "검사", color: "grey", icon: GreyIcon },
-];
+const STATUS_MAP: Record<string, StatusItem> = {
+  safe: { label: "안전", color: "green", icon: GreenIcon },
+  caution: { label: "주의", color: "yellow", icon: YellowIcon },
+  danger: { label: "위험", color: "red", icon: RedIcon },
+  unknown: { label: "오류!!!", color: "grey", icon: GreyIcon },
+  loading: { label: "검사중", color: "grey", icon: GreyIcon },
+};
 
 interface ColorButtonProps {
   title: string;
   link: string;
+  status?: "safe" | "caution" | "danger" | "unknown" | "loading";
 }
 
-const COLOR_MAP: Record<StatusItem["color"], string> = {
-  green: "#059669",
-  yellow: "#ca8a04",
-  red: "#dc2626",
-  grey: "#525252",
-};
-
-export default function ColorButton({ title, link }: ColorButtonProps) {
-  const [selected] = useState<StatusItem>(() => {
-    return STATUS[Math.floor(Math.random() * STATUS.length)];
-  });
+export default function ColorButton({
+  title,
+  link,
+  status = "unknown",
+}: ColorButtonProps) {
+  const selected = STATUS_MAP[status] || STATUS_MAP.unknown;
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-
-    console.log({
-      status: selected.label,
-      title,
-      link,
-    });
+    console.log({ status, title, link });
   };
 
   return (
-    <div className={`mainBadge badge-${selected.color}`} onClick={handleClick}>
+    <div
+      className={`mainBadge badge-${selected.color}`}
+      onClick={handleClick}
+      style={{ cursor: "pointer" }}
+    >
       <img
         src={selected.icon}
         style={{ width: 16, height: 16 }}
