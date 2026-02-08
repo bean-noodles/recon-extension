@@ -13,8 +13,8 @@ const STATUS_MAP: Record<string, StatusItem> = {
   safe: { label: "안전", color: "#059669", icon: GreenIcon },
   caution: { label: "주의", color: "#ca8a04", icon: YellowIcon },
   danger: { label: "위험", color: "#dc2626", icon: RedIcon },
-  unknown: { label: "오류!!!", color: "#525252", icon: GreyIcon },
-  loading: { label: "검사중", color: "#525252", icon: GreyIcon },
+  unknown: { label: "오류", color: "#525252", icon: GreyIcon },
+  loading: { label: "검사", color: "#525252", icon: GreyIcon },
 };
 
 interface ColorButtonProps {
