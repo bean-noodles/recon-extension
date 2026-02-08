@@ -61,38 +61,83 @@ async function analyzeSite(
   }
 }
 
+function getTitleAndLink(
+  element: Element,
+): { title: string; link: string } | null {
+  // Standard result: H3 inside A
+  if (element.tagName === "H3") {
+    const anchor = element.closest("a");
+    if (anchor) {
+      return {
+        title: (element as HTMLElement).innerText.trim(),
+        link: anchor.href,
+      };
+    }
+  }
+
+  // Official/Brand result: span.VuuXrf
+  if (element.classList.contains("VuuXrf")) {
+    const container = element.closest(".B6fmyf") || element.closest(".MjjYud");
+    // Try to find the URL.
+    const anchor = container?.querySelector("a");
+    if (anchor && anchor.href) {
+      return {
+        title: (element as HTMLElement).innerText.trim(),
+        link: anchor.href,
+      };
+    }
+  }
+
+  return null;
+}
+
 function collectSearchResults(): SearchResult[] {
   const results: SearchResult[] = [];
-  const h3List = document.querySelectorAll("h3");
+  const processedLinks = new Set<string>();
 
-  h3List.forEach((h3) => {
-    const anchor = h3.closest("a");
-    if (!anchor) return;
+  // Select standard H3s AND the reported class for official sites
+  const elements = document.querySelectorAll("h3, .VuuXrf");
 
-    // Clone node to extract text without badge from content-ui
-    const clone = h3.cloneNode(true) as HTMLElement;
+  elements.forEach((el) => {
+    // Clone node to safely extract text (removing badge host)
+    const clone = el.cloneNode(true) as HTMLElement;
     const badgeHost = clone.querySelector(`.${BADGE_HOST_CLASS}`);
     if (badgeHost) badgeHost.remove();
 
-    const title = clone.innerText.trim();
-    const link = anchor.href;
+    // Custom extraction logic
+    const info = getTitleAndLink(el);
+    if (!info) return;
+
+    const { title, link } = info;
 
     if (!title || !link) return;
 
+    // Deduplicate: If we already have this link, skip
+    if (processedLinks.has(link)) return;
+    processedLinks.add(link);
+
+    // Description extraction (best effort)
+    let description = "";
+
+    // Determine result block context
     const resultBlock =
-      h3.closest("div[jscontroller]") || h3.closest("div[data-snhf]");
-    if (!resultBlock) return;
+      el.closest("div[jscontroller]") ||
+      el.closest("div[data-snhf]") ||
+      el.closest(".MjjYud") || // Common card container
+      el.closest(".B6fmyf"); // Official result container
 
-    const descriptionEl =
-      resultBlock.querySelector("div.VwiC3b") ||
-      resultBlock.querySelector("span.VwiC3b") ||
-      resultBlock.querySelector("div[role='heading'] ~ div") ||
-      null;
+    if (resultBlock) {
+      const descriptionEl =
+        resultBlock.querySelector("div.VwiC3b") ||
+        resultBlock.querySelector("span.VwiC3b") ||
+        resultBlock.querySelector("div[role='heading'] ~ div") ||
+        null;
 
-    const rawDescription = descriptionEl
-      ? (descriptionEl as HTMLElement).innerText.trim()
-      : "";
-    const description = cleanDescription(rawDescription);
+      const rawDescription = descriptionEl
+        ? (descriptionEl as HTMLElement).innerText.trim()
+        : "";
+      description = cleanDescription(rawDescription);
+    }
 
     // Initial state from cache or default
     let status: SearchResult["status"] = "loading";

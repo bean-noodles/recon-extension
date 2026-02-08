@@ -4,20 +4,38 @@ import App from "@src/matches/all/App";
 
 console.log("[CEB] Content UI script loaded");
 
+const injectedLinks = new Set<string>();
+
 function injectReactBadges() {
-  const h3List = document.querySelectorAll("a h3");
+  const elements = document.querySelectorAll("h3, .VuuXrf");
 
-  h3List.forEach((h3) => {
-    const element = h3 as HTMLElement;
+  elements.forEach((el) => {
+    const element = el as HTMLElement;
     if (element.dataset.extInjected) return;
-    element.dataset.extInjected = "true";
 
-    const anchor = element.closest("a");
+    // Determine the anchor (link)
+    let anchor: HTMLAnchorElement | null = element.closest("a");
+
+    // Special handling for official site class .VuuXrf which might not be inside an A tag directly
+    if (!anchor && element.classList.contains("VuuXrf")) {
+      const container =
+        element.closest(".B6fmyf") || element.closest(".MjjYud");
+      anchor = container?.querySelector("a") || null;
+    }
+
     if (!anchor) return;
 
-    const title = element.innerText;
     const link = anchor.href;
-    if (!title || !link) return;
+    if (!link) return;
+
+    // Deduplicate: If we already injected a badge for this link, skip
+    if (injectedLinks.has(link)) return;
+
+    // Mark as injected
+    element.dataset.extInjected = "true";
+    injectedLinks.add(link);
+
+    const title = element.innerText;
 
     // Create shadow host
     const shadowHost = document.createElement("span");
