@@ -89,7 +89,7 @@ const Popup = () => {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: googleUser.email }),
+            body: JSON.stringify({ id: googleUser.id }),
           },
         );
 
