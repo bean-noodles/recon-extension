@@ -64,6 +64,27 @@ export default function MainPage() {
     };
   }, []);
 
+  const [isAutoScan, setIsAutoScan] = useState(true);
+
+  useEffect(() => {
+    chrome.storage.local.get("autoScan", (data) => {
+      if (data.autoScan !== undefined) {
+        setIsAutoScan(data.autoScan);
+      }
+    });
+
+    const listener = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName === "local" && changes.autoScan) {
+        setIsAutoScan(changes.autoScan.newValue);
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, []);
+
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0] && tabs[0].url) {
@@ -112,42 +133,59 @@ export default function MainPage() {
           </p>
         </div>
       ) : (
-        results.map((r, idx) => (
-          <li key={idx} className="result-item">
-            <div className="result-row" onClick={() => toggleExpand(idx)}>
-              <div className="result-title">{getDomainFromLink(r.link)}</div>
-
-              <div className="result-actions">
-                <ColorButton
-                  title={r.badgeInfo.title}
-                  link={r.badgeInfo.link}
-                  status={r.status}
-                />
-                <img
-                  src={r.expanded ? Arrowdown : Arrowup}
-                  className="arrow-icon"
-                />
-              </div>
-            </div>
-
-            {/* 확장 영역 */}
+        <>
+          {!isAutoScan && (
             <div
-              className={`expand-area ${r.expanded ? "expanded" : "collapsed"}`}
+              style={{
+                padding: "12px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px",
+                marginBottom: "12px",
+                textAlign: "center",
+                color: "#666",
+                fontSize: "13px",
+              }}
             >
-              {r.expanded && (
-                <div className="expand-content">
-                  <p>
-                    <strong>상태:</strong>{" "}
-                    {r.status?.toUpperCase() || "UNKNOWN"}
-                  </p>
-                  <p>
-                    <strong>이유:</strong> {r.reason || "정보 없음"}
-                  </p>
-                </div>
-              )}
+              자동 검사 설정이 꺼져있습니다.
             </div>
-          </li>
-        ))
+          )}
+          {results.map((r, idx) => (
+            <li key={idx} className="result-item">
+              <div className="result-row" onClick={() => toggleExpand(idx)}>
+                <div className="result-title">{getDomainFromLink(r.link)}</div>
+
+                <div className="result-actions">
+                  <ColorButton
+                    title={r.badgeInfo.title}
+                    link={r.badgeInfo.link}
+                    status={r.status}
+                  />
+                  <img
+                    src={r.expanded ? Arrowdown : Arrowup}
+                    className="arrow-icon"
+                  />
+                </div>
+              </div>
+
+              {/* 확장 영역 */}
+              <div
+                className={`expand-area ${r.expanded ? "expanded" : "collapsed"}`}
+              >
+                {r.expanded && (
+                  <div className="expand-content">
+                    <p>
+                      <strong>상태:</strong>{" "}
+                      {r.status?.toUpperCase() || "UNKNOWN"}
+                    </p>
+                    <p>
+                      <strong>이유:</strong> {r.reason || "정보 없음"}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
+        </>
       )}
     </ul>
   );

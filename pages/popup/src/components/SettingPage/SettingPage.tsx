@@ -1,5 +1,5 @@
 import "@src/components/SettingPage/SettingPage.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ArrowbackIcon from "@src/../public/icons/arrow_back.svg";
 
 interface SettingPageProps {
@@ -7,7 +7,21 @@ interface SettingPageProps {
 }
 
 export default function SettingPage({ setPage }: SettingPageProps) {
-  const [toggle, setToggle] = useState(false);
+  const [toggle, setToggle] = useState(true);
+
+  useEffect(() => {
+    chrome.storage.local.get(["autoScan"], (result) => {
+      if (result.autoScan !== undefined) {
+        setToggle(result.autoScan);
+      }
+    });
+  }, []);
+
+  const handleToggle = () => {
+    const newValue = !toggle;
+    setToggle(newValue);
+    chrome.storage.local.set({ autoScan: newValue });
+  };
 
   return (
     <div className="setting-page">
@@ -20,7 +34,7 @@ export default function SettingPage({ setPage }: SettingPageProps) {
       {/* iOS 토글 */}
       <div className="toggle-container">
         <div
-          onClick={() => setToggle(!toggle)}
+          onClick={handleToggle}
           className={`toggle-switch ${toggle ? "active" : "inactive"}`}
         >
           <div className={`toggle-knob ${toggle ? "active" : "inactive"}`} />

@@ -18,6 +18,22 @@ const analysisCache = new Map<
 >();
 const pendingFetches = new Set<string>();
 
+let isAutoScanEnabled = true;
+
+// Load initial setting
+chrome.storage.local.get(["autoScan"], (result) => {
+  if (result.autoScan !== undefined) {
+    isAutoScanEnabled = result.autoScan;
+  }
+});
+
+// Listen for changes
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.autoScan) {
+    isAutoScanEnabled = changes.autoScan.newValue;
+  }
+});
+
 const BADGE_HOST_CLASS = "recon-badge-host";
 
 function cleanDescription(text: string): string {
@@ -149,13 +165,15 @@ function collectSearchResults(): SearchResult[] {
       reason = cached.reason;
     } else {
       if (!pendingFetches.has(link)) {
-        pendingFetches.add(link);
-        analyzeSite(link).then((result) => {
-          analysisCache.set(link, result);
-          pendingFetches.delete(link);
-          // Trigger storage update
-          updateResultsStorage();
-        });
+        if (isAutoScanEnabled) {
+          pendingFetches.add(link);
+          analyzeSite(link).then((result) => {
+            analysisCache.set(link, result);
+            pendingFetches.delete(link);
+            // Trigger storage update
+            updateResultsStorage();
+          });
+        }
       }
     }
 
