@@ -1,3 +1,5 @@
+import { userStorage } from "@extension/storage";
+
 console.log("[CEB] Content script (headless) loaded");
 
 interface SearchResult {
@@ -44,10 +46,14 @@ async function analyzeSite(
   link: string,
 ): Promise<{ status: SearchResult["status"]; reason: string }> {
   try {
+    const userState = await userStorage.get();
+    const userId = userState.user?.id;
+    console.log("[Recon] User info for request:", { userState, userId });
+
     const response = await fetch("http://localhost:3000/recon/site", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: link }),
+      body: JSON.stringify({ url: link, userId }),
     });
 
     if (!response.ok) {
