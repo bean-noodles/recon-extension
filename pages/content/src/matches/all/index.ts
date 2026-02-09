@@ -44,6 +44,8 @@ function cleanDescription(text: string): string {
 
 async function analyzeSite(
   link: string,
+  title: string,
+  description: string,
 ): Promise<{ status: SearchResult["status"]; reason: string }> {
   try {
     const userState = await userStorage.get();
@@ -53,7 +55,7 @@ async function analyzeSite(
     const response = await fetch("http://localhost:3000/recon/site", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: link, userId }),
+      body: JSON.stringify({ url: link, title, description, userId }),
     });
 
     if (!response.ok) {
@@ -173,7 +175,7 @@ function collectSearchResults(): SearchResult[] {
       if (!pendingFetches.has(link)) {
         if (isAutoScanEnabled) {
           pendingFetches.add(link);
-          analyzeSite(link).then((result) => {
+          analyzeSite(link, title, description).then((result) => {
             analysisCache.set(link, result);
             pendingFetches.delete(link);
             // Trigger storage update
