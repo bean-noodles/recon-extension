@@ -168,7 +168,7 @@ function collectSearchResults(): SearchResult[] {
 
     // Initial state from cache or default
     let status: SearchResult["status"] = "loading";
-    let reason = "Analyzing...";
+    let reason = ""; // 분석 중일 경우 이유 공백 유지
 
     if (analysisCache.has(link)) {
       const cached = analysisCache.get(link)!;

@@ -173,7 +173,8 @@ export default function MainPage() {
               >
                 {r.expanded && (
                   <div className="expand-content">
-                    <p>{r.reason || "정보 없음"}</p>
+                    <p>{r.reason || ""}</p>
+                    {/* 분석 중일 경우 이유 공백 유지 */}
                   </div>
                 )}
               </div>
