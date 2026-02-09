@@ -6,7 +6,8 @@
 }
 
 .result-item {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  line-height: 20px;
   transition: filter 0.3s;
 }
 
@@ -52,7 +53,7 @@
 }
 
 .expand-area.expanded {
-  height: 96px;
+  padding: 4px;
 }
 
 .expand-content {

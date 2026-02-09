@@ -173,13 +173,7 @@ export default function MainPage() {
               >
                 {r.expanded && (
                   <div className="expand-content">
-                    <p>
-                      <strong>상태:</strong>{" "}
-                      {r.status?.toUpperCase() || "UNKNOWN"}
-                    </p>
-                    <p>
-                      <strong>이유:</strong> {r.reason || "정보 없음"}
-                    </p>
+                    <p>{r.reason || "정보 없음"}</p>
                   </div>
                 )}
               </div>
