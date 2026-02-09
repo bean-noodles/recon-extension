@@ -55,7 +55,10 @@ async function analyzeSite(
     const response = await fetch("http://localhost:3000/recon/site", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: link, title, description, userId }),
+      body: JSON.stringify({
+        webData: { url: link, title, description },
+        userId,
+      }),
     });
 
     if (!response.ok) {
